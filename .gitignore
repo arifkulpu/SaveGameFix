@@ -1,0 +1,10 @@
+build/
+build_static/
+vcpkg_installed/
+scratch/
+.vs/
+out/
+*.user
+*.pdb
+*.obj
+*.log
