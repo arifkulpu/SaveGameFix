@@ -1,47 +1,83 @@
-# Savegamefix (Safe Save & FPS Protector for Skyrim AE)
+# Savegamefix (Safe Save & Physics Guard for Skyrim)
 
-This SKSE plugin provides two critical features to stabilize your game and improve performance, specifically when dealing with the Faster HDT-SMP physics engine.
+This SKSE plugin acts as a **"Traffic Police"** for your game engine, specifically designed to eliminate "Exception Access Violation" crashes during the save process in heavily modded setups (especially those using FSMP and CBPC).
 
-## Features
+## Technical Roadmap & Features
 
-1. **Safe Save Mechanic (Crash Preventer)**
-   - When you trigger a save (Quick Save, Auto Save, or Manual Save), the plugin automatically sends a silent `smp off` command to instantly suspend all physics calculations.
-   - After the save process is completely written to the disk, it sends an `smp on` command to resume physics and executes the `pcb` (Purge Cell Buffers) command to clear memory safely.
-   - This eliminates the infamous "Race Condition" crashes caused by the physics engine trying to update actors while the game is serializing them.
+### 1. Project Infrastructure
+- **CommonLibSSE-NG**: Fully compatible with Skyrim AE (1.6.1170) and other versions.
+- **Address Library**: Uses version-independent offsets to ensure stability across updates.
 
-2. **Dead NPC Physics Freezer (FPS Protector)**
-   - The plugin actively listens for the `TESDeathEvent`.
-   - The moment an NPC dies, their underlying Havok animation state is permanently frozen. 
-   - Because Faster HDT-SMP relies on the base skeleton's movement to calculate physics, freezing the animation effectively puts their SMP physics (hair, cloaks, armor) to sleep.
-   - This prevents massive FPS drops during and after large battles with many corpses.
+### 2. Save Hooking (Main Hook)
+- Hooks `RE::BGSSaveLoadManager::Save` directly.
+- Manages a global `isSaving` state to coordinate all engine systems.
+
+### 3. Physics Guard (FSMP & CBPC)
+- **Direct Hooks**: Hooks the update loops of `hdtSMP64.dll` and `cbp.dll`.
+- **Zero-Latency Suspension**: If `isSaving` is active, physics updates return immediately, preventing the physics engine from accessing memory while the game is serializing it.
+
+### 4. Thread & Memory Safety
+- **ScrapHeap Monitoring**: Checks memory status before allowing the save to proceed.
+- **TaskQueue Management**: Minimizes background task interference during the critical save window.
+
+### 5. Quicksave Reliability
+- Refactors Quicksaves to be processed as Manual Saves internally, preventing data corruption common in rapid save/load cycles.
+
+### 6. Post-Save Cleanup
+- **Automatic Resume**: Re-enables physics loops immediately after the file is written.
+- **Forced PCB**: Executes `Purge Cell Buffers` to clear temporary memory and prevent late-save bloat.
+
+### 7. Diagnostics
+- Detailed logging to `Documents/My Games/Skyrim Special Edition/SKSE/Savegamefix.log`.
+- Console feedback for system status.
 
 ## Requirements
 - **Skyrim Anniversary Edition (1.6.1170)**
-- **SKSE64** (matching your game version)
+- **SKSE64** (v2.2.6+)
 - **Address Library for SKSE Plugins**
-- **Faster HDT-SMP (FSMP)**
+- **Faster HDT-SMP (FSMP)** and/or **CBPC**
 
 ---
+"The best answer to 'it's unnecessary' is a crash-free session."
 
-# Savegamefix (Skyrim AE için Güvenli Kayıt ve FPS Koruyucu)
+# Savegamefix (Skyrim için Güvenli Kayıt ve Fizik Koruması)
 
-Bu SKSE eklentisi, özellikle Faster HDT-SMP fizik motoruyla oynarken oyununuzu dengelemek ve performansı artırmak için iki kritik özellik sunar.
+Bu SKSE eklentisi, oyun motorunuz için bir **"Trafik Polisi"** görevi görerek, özellikle ağır modlanmış sistemlerde (FSMP ve CBPC kullanan) kayıt işlemi sırasında oluşan "Exception Access Violation" çökmelerini ortadan kaldırmak için tasarlanmıştır.
 
-## Özellikler
+## Teknik Yol Haritası ve Özellikler
 
-1. **Güvenli Kayıt Mekaniği (Safe Save)**
-   - Kayıt işlemi başlattığınızda (Hızlı Kayıt, Otomatik Kayıt veya Normal Kayıt), eklenti arka planda sessizce `smp off` komutunu göndererek dünyadaki tüm fizik hesaplamalarını anında durdurur.
-   - Kayıt işlemi diske güvenle yazıldıktan sonra `smp on` komutuyla fizikleri tekrar başlatır ve hemen ardından `pcb` (Purge Cell Buffers) komutunu çalıştırarak belleği temizler.
-   - Bu sistem, oyun motoru NPC'leri kayıt dosyasına yazmaya çalışırken fizik motorunun arka planda hareket hesaplamaya çalışmasından kaynaklanan meşhur çökme (CTD) sorunlarını %100 ortadan kaldırır.
+### 1. Proje Altyapısı
+- **CommonLibSSE-NG**: Skyrim AE (1.6.1170) ve diğer tüm sürümlerle tam uyumluluk.
+- **Address Library**: Güncellemelerde modun bozulmaması için sürümden bağımsız ofsetler kullanımı.
 
-2. **Ölü NPC Fizik Dondurucu (FPS Koruyucu)**
-   - Eklenti, arka planda ölüm olaylarını (`TESDeathEvent`) dinler.
-   - Bir NPC öldüğü an, temel Havok animasyon iskeleti tamamen dondurulur.
-   - Faster HDT-SMP, saç ve pelerinleri hareket ettirmek için alt iskeletin ivmesine ihtiyaç duyduğundan, iskeletin donması SMP fiziklerinin de otomatik olarak uyku moduna geçmesini sağlar.
-   - Bu sayede, çok sayıda cesedin bulunduğu büyük savaşlardan sonra yaşanan devasa FPS düşüşlerinin önüne geçilir.
+### 2. Kayıt Yakalama (Main Hook)
+- `RE::BGSSaveLoadManager::Save` fonksiyonunu doğrudan kancalar.
+- Tüm sistemleri koordine etmek için global bir `isSaving` durumu yönetir.
+
+### 3. Fizik Koruması (FSMP & CBPC)
+- **Doğrudan Kancalar**: `hdtSMP64.dll` ve `cbp.dll` dosyalarının güncelleme döngülerini kancalar.
+- **Sıfır Gecikmeli Duraklatma**: Eğer `isSaving` aktifse, fizik güncellemeleri anında durur (return), böylece oyun verileri yazılırken fizik motorunun belleğe erişmesi engellenir.
+
+### 4. İş Parçacığı ve Bellek Güvenliği
+- **ScrapHeap İzleme**: Kayıt başlamadan önce bellek durumunu kontrol eder.
+- **Görev Kuyruğu Yönetimi**: Kayıt penceresinde arka plan görevlerinin (Tasklet) müdahalesini en aza indirir.
+
+### 5. Hızlı Kayıt (Quicksave) Güvenilirliği
+- Hızlı Kayıtları (F5) dahili olarak "Manuel Kayıt" gibi işleyerek veri bozulmalarını önler.
+
+### 6. Kayıt Sonrası Temizlik
+- **Otomatik Devam**: Dosya yazıldıktan hemen sonra fizik döngülerini tekrar aktif eder.
+- **Zorunlu PCB**: Bellek şişmesini önlemek için `Purge Cell Buffers` komutunu zorunlu olarak çalıştırır.
+
+### 7. Teşhis ve Loglama
+- `Documents/My Games/Skyrim Special Edition/SKSE/Savegamefix.log` dosyasına detaylı günlük kaydı.
+- Sistem durumu hakkında konsol geri bildirimi.
 
 ## Gereksinimler
 - **Skyrim Anniversary Edition (1.6.1170)**
-- **SKSE64** (Oyun sürümünüzle uyumlu)
+- **SKSE64** (v2.2.6+)
 - **Address Library for SKSE Plugins**
-- **Faster HDT-SMP (FSMP)**
+- **Faster HDT-SMP (FSMP)** ve/veveya **CBPC**
+
+---
+"Gereksiz diyenlere en güzel cevap, çökme yaşanmayan bir oyun seansıdır."

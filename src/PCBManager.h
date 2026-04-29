@@ -5,7 +5,7 @@
 class PCBManager : public RE::BSTEventSink<RE::TESCellAttachDetachEvent> {
 public:
     static void Install();
-    static void RequestPCB();
+    static void RequestPCB(bool a_force = false);
     
     virtual RE::BSEventNotifyControl ProcessEvent(const RE::TESCellAttachDetachEvent* a_event, RE::BSTEventSource<RE::TESCellAttachDetachEvent>* a_eventSource) override;
 

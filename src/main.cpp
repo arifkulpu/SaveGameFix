@@ -3,6 +3,8 @@
 #include "PhysicsFreezer.h"
 #include "PCBManager.h"
 #include "FSMPManager.h"
+#include "CBPCManager.h"
+#include "ThreadSafetyManager.h"
 
 void InitializeLogging() {
     auto path = logger::log_directory();
@@ -31,6 +33,7 @@ SKSEPluginInfo(
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse) {
     InitializeLogging();
     SKSE::Init(a_skse);
+    SKSE::AllocTrampoline(128);
 
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* a_msg) {
         switch (a_msg->type) {
@@ -39,6 +42,8 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse) {
                 SaveManager::Install();
                 PCBManager::Install();
                 FSMPManager::Install();
+                CBPCManager::Install();
+                ThreadSafetyManager::Install();
                 PhysicsFreezer::Install();
                 break;
         }

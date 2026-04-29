@@ -14,25 +14,20 @@ PCBManager* PCBManager::GetSingleton() {
     return &singleton;
 }
 
-void PCBManager::RequestPCB() {
+void PCBManager::RequestPCB(bool a_force) {
     auto player = RE::PlayerCharacter::GetSingleton();
     if (!player) return;
 
-    if (player->IsInCombat()) {
+    if (!a_force && player->IsInCombat()) {
         logger::info("Player is in combat, delaying PCB.");
         return;
     }
 
-    auto calendar = RE::Calendar::GetSingleton();
-    if (!calendar) return;
-
-    float currentTime = calendar->GetDaysPassed() * 24.0f * 60.0f * 60.0f; // Convert days to in-game seconds, or use real time.
-    // For real time cooldown:
     static auto lastTime = std::chrono::steady_clock::now() - std::chrono::seconds(15 * 60 + 1);
     auto now = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - lastTime).count();
 
-    if (duration < 15 * 60) {
+    if (!a_force && duration < 15 * 60) {
         logger::info("PCB is on cooldown. Time elapsed: {} seconds.", duration);
         return;
     }

@@ -5,6 +5,8 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 
+#include <Windows.h>
+
 using namespace std::literals;
 
 namespace logger = SKSE::log;

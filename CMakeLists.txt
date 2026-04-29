@@ -17,6 +17,8 @@ target_sources(${PROJECT_NAME}
         src/PhysicsFreezer.cpp
         src/PCBManager.cpp
         src/FSMPManager.cpp
+        src/CBPCManager.cpp
+        src/ThreadSafetyManager.cpp
         src/PluginAPI.h
         src/PCH.h
 )
