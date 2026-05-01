@@ -33,7 +33,7 @@ SKSEPluginInfo(
 SKSEPluginLoad(const SKSE::LoadInterface* a_skse) {
     InitializeLogging();
     SKSE::Init(a_skse);
-    SKSE::AllocTrampoline(128);
+    SKSE::AllocTrampoline(1024);
 
     SKSE::GetMessagingInterface()->RegisterListener([](SKSE::MessagingInterface::Message* a_msg) {
         switch (a_msg->type) {

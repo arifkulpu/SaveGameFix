@@ -11,8 +11,8 @@ private:
     static inline bool s_isSaving = false;
 
     struct Hooks {
-        static bool Save(RE::BGSSaveLoadManager* a_this, const char* a_fileName, int8_t a_unkn, uint32_t a_unkn2);
-        static inline REL::Relocation<decltype(Save)> DefaultSave;
+        static bool Save(RE::BGSSaveLoadManager* a_this, const char* a_fileName);
+        static inline REL::Relocation<decltype(Save)> _Save;
 
         static void Install();
     };
