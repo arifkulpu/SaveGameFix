@@ -91,3 +91,6 @@ Bu SKSE eklentisi, oyun motorunuz için bir **"Trafik Polisi"** görevi görerek
 
 ---
 "Gereksiz diyenlere en güzel cevap, çökme yaşanmayan bir oyun seansıdır."
+
+## License / Lisans
+Copyright (c) 2026 Arif KULPU. All Rights Reserved. — Tüm Hakları Saklıdır. See [LICENSE](LICENSE.md) for details.
