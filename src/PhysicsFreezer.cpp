@@ -42,13 +42,6 @@ void PhysicsFreezer::UnfreezeAll() {
 }
 
 void PhysicsFreezer::FreezeDeadNPCs() {
-    auto processLists = RE::ProcessLists::GetSingleton();
-    if (!processLists) return;
-
-    for (auto& handle : processLists->highActorHandles) {
-        auto actor = handle.get();
-        if (actor && actor->IsDead()) {
-            // actor->PauseCurrentAnimation(true);
-        }
-    }
+    // This function is currently a placeholder for Roadmap Step 3.
+    // Removed iteration to ensure thread safety during background saves.
 }

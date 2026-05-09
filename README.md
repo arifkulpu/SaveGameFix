@@ -9,7 +9,8 @@ This SKSE plugin acts as a **"Traffic Police"** for your game engine, specifical
 - **Address Library**: Uses version-independent offsets to ensure stability across updates.
 
 ### 2. Save Hooking (Main Hook)
-- Hooks `RE::BGSSaveLoadManager::Save` directly.
+- Hooks `RE::BGSSaveLoadManager::Save` (specifically `Save_Impl`) directly.
+- Uses **MinHook** with HDE64 disassembler to overcome SKSE Trampoline's instruction boundary limitations, eliminating `EXCEPTION_ACCESS_VIOLATION` (Memory Not Readable) crashes during hook injection.
 - Manages a global `isSaving` state to coordinate all engine systems.
 
 ### 3. Physics Guard (FSMP & CBPC)
@@ -39,8 +40,8 @@ This SKSE plugin acts as a **"Traffic Police"** for your game engine, specifical
 - **Faster HDT-SMP (FSMP)** and/or **CBPC**
 
 ## Credits
-- **Author**: Cencal
-- **Special Thanks**: FSMP (Faster HDT-SMP) team for physics insights.
+- **Author**: King Modding
+
 
 ---
 "The best answer to 'it's unnecessary' is a crash-free session."
@@ -56,7 +57,8 @@ Bu SKSE eklentisi, oyun motorunuz için bir **"Trafik Polisi"** görevi görerek
 - **Address Library**: Güncellemelerde modun bozulmaması için sürümden bağımsız ofsetler kullanımı.
 
 ### 2. Kayıt Yakalama (Main Hook)
-- `RE::BGSSaveLoadManager::Save` fonksiyonunu doğrudan kancalar.
+- `RE::BGSSaveLoadManager::Save` (özellikle `Save_Impl`) fonksiyonunu doğrudan kancalar.
+- Kancalama için **MinHook** ve HDE64 kod çözücüsünü (disassembler) kullanır. Bu sayede SKSE Trampoline'in komut (instruction) sınırlarını bölmesinden kaynaklanan `EXCEPTION_ACCESS_VIOLATION` (Memory Not Readable) çökmelerini tamamen çözer.
 - Tüm sistemleri koordine etmek için global bir `isSaving` durumu yönetir.
 
 ### 3. Fizik Koruması (FSMP & CBPC)
@@ -86,8 +88,7 @@ Bu SKSE eklentisi, oyun motorunuz için bir **"Trafik Polisi"** görevi görerek
 - **Faster HDT-SMP (FSMP)** ve/veveya **CBPC**
 
 ## Emeği Geçenler
-- **Mod Yazarı**: Cencal
-- **Özel Teşekkür**: Fizik motoru hakkındaki ipuçları için FSMP (Faster HDT-SMP) ekibine.
+- **Mod Yazarı**: King Modding
 
 ---
 "Gereksiz diyenlere en güzel cevap, çökme yaşanmayan bir oyun seansıdır."

@@ -47,7 +47,6 @@ void PCBManager::RequestPCB(bool a_force) {
                 if (script) {
                     script->SetCommand("pcb");
                     script->CompileAndRun(nullptr);
-                    delete script;
                 }
             }
         });

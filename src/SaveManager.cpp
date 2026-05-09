@@ -2,67 +2,73 @@
 #include "PhysicsFreezer.h"
 #include "PCBManager.h"
 #include "ThreadSafetyManager.h"
-#include "FSMPManager.h"
-
 void SaveManager::Install() {
     Hooks::Install();
     logger::info("SaveManager hooks installed.");
 }
 
+#include "minhook/MinHook.h"
+
 void SaveManager::Hooks::Install() {
-    auto& trampoline = SKSE::GetTrampoline();
+    // Initialize MinHook
+    if (MH_Initialize() != MH_OK) {
+        logger::critical("Failed to initialize MinHook!");
+        return;
+    }
+
+    // Using REL::RelocationID(34818, 35727) for Save_Impl (4 arguments in SE, might be 6 in AE, using 6 to be safe)
+    REL::Relocation<std::uintptr_t> target{ REL::RelocationID(34818, 35727) }; 
     
-    // Using REL::ID(35711) for BGSSaveLoadManager::Save in 1.6.1170
-    REL::Relocation<std::uintptr_t> target{ REL::ID(35711) }; 
-    
-    logger::info("Hooking BGSSaveLoadManager::Save at address: 0x{:X}", target.address());
-    
-    // Use write_branch to maintain the hook chain
-    _Save = trampoline.write_branch<5>(target.address(), Save);
-    
-    logger::info("Trampoline allocated at: 0x{:X}", _Save.address());
+    if (target.address()) {
+        if (MH_CreateHook((void*)target.address(), (void*)&Save, (void**)&_Save) != MH_OK) {
+            logger::critical("Failed to create hook for BGSSaveLoadManager::Save!");
+            return;
+        }
+        if (MH_EnableHook((void*)target.address()) != MH_OK) {
+            logger::critical("Failed to enable hook for BGSSaveLoadManager::Save!");
+            return;
+        }
+        logger::info("Hooked BGSSaveLoadManager::Save (Save_Impl) using MinHook at address: 0x{:X}", target.address());
+    } else {
+        logger::critical("Failed to find BGSSaveLoadManager::Save address!");
+    }
 }
 
-bool SaveManager::Hooks::Save(RE::BGSSaveLoadManager* a_this, const char* a_fileName) {
+bool SaveManager::Hooks::Save(RE::BGSSaveLoadManager* a_this, int32_t a_deviceID, uint32_t a_outputStats, const char* a_fileName, bool a_isAutoSave, void* a_unk) {
     if (!a_this) {
         return false;
     }
 
     OnPreSave();
     
-    // Call original function
-    // Note: If the engine actually uses 4 arguments, they are still in R8/R9.
-    // Our C++ function didn't touch them yet (hopefully).
-    bool result = _Save(a_this, a_fileName);
+    // Call original function with all 6 arguments
+    bool result = _Save(a_this, a_deviceID, a_outputStats, a_fileName, a_isAutoSave, a_unk);
     
     OnPostSave();
     
     return result;
 }
 
-
 void SaveManager::OnPreSave() {
     s_isSaving = true;
-    logger::info("Pre-Save: Suspending physics...");
+    logger::info("Starting Pre-Save routines for Skyrim 1.6.1170...");
     
     ThreadSafetyManager::PrepareForSave();
-    
-    // Use the new FSMP control instead of the async console command
-    FSMPManager::GetSingleton()->DisablePhysics(true);
-    
     PhysicsFreezer::FreezeAll();
     
-    logger::info("Pre-Save: Ready.");
+    logger::info("Pre-Save routines complete.");
 }
 
 void SaveManager::OnPostSave() {
+    if (!RE::PlayerCharacter::GetSingleton()) {
+        s_isSaving = false;
+        return;
+    }
+
     s_isSaving = false;
     logger::info("Post-Save: Resuming systems...");
     
     PhysicsFreezer::UnfreezeAll();
-    
-    // Resume FSMP
-    FSMPManager::GetSingleton()->DisablePhysics(false);
     
     ThreadSafetyManager::FinalizeAfterSave();
     

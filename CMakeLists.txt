@@ -16,11 +16,13 @@ target_sources(${PROJECT_NAME}
         src/SaveManager.cpp
         src/PhysicsFreezer.cpp
         src/PCBManager.cpp
-        src/FSMPManager.cpp
-        src/CBPCManager.cpp
         src/ThreadSafetyManager.cpp
-        src/PluginAPI.h
         src/PCH.h
+        src/minhook/buffer.c
+        src/minhook/hook.c
+        src/minhook/trampoline.c
+        src/minhook/hde32.c
+        src/minhook/hde64.c
 )
 
 target_link_libraries(${PROJECT_NAME} 

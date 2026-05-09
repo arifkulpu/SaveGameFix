@@ -2,8 +2,6 @@
 #include "SaveManager.h"
 #include "PhysicsFreezer.h"
 #include "PCBManager.h"
-#include "FSMPManager.h"
-#include "CBPCManager.h"
 #include "ThreadSafetyManager.h"
 
 void InitializeLogging() {
@@ -41,8 +39,6 @@ SKSEPluginLoad(const SKSE::LoadInterface* a_skse) {
                 logger::info("Data loaded. Registering systems...");
                 SaveManager::Install();
                 PCBManager::Install();
-                FSMPManager::Install();
-                CBPCManager::Install();
                 ThreadSafetyManager::Install();
                 PhysicsFreezer::Install();
                 break;
