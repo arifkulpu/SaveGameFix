@@ -1,3 +1,5 @@
+#pragma once
+
 #include "PCH.h"
 
 class PhysicsFreezer : public RE::BSTEventSink<RE::TESDeathEvent> {

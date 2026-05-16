@@ -38,17 +38,33 @@ void PCBManager::RequestPCB(bool a_force) {
     // Run PCB command
     if (const auto taskQueue = SKSE::GetTaskInterface()) {
         taskQueue->AddTask([]() {
-            RE::ConsoleLog::GetSingleton()->Print("Running SafeSave PCB...");
-            
-            // To run an actual console command safely:
-            auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
-            if (scriptFactory) {
-                RE::Script* script = scriptFactory->Create();
-                if (script) {
-                    script->SetCommand("pcb");
-                    script->CompileAndRun(nullptr);
-                }
+            auto* consoleLog = RE::ConsoleLog::GetSingleton();
+            if (consoleLog) {
+                consoleLog->Print("Running SafeSave PCB...");
             }
+
+            auto* player = RE::PlayerCharacter::GetSingleton();
+            if (!player) {
+                logger::warn("PCBManager::RequestPCB: PlayerCharacter NULL, PCB atlandı.");
+                return;
+            }
+
+            auto scriptFactory = RE::IFormFactory::GetConcreteFormFactoryByType<RE::Script>();
+            if (!scriptFactory) {
+                logger::error("PCBManager::RequestPCB: Script factory NULL!");
+                return;
+            }
+
+            RE::Script* script = scriptFactory->Create();
+            if (!script) {
+                logger::error("PCBManager::RequestPCB: Script oluşturulamadı!");
+                return;
+            }
+
+            script->SetCommand("pcb");
+            // Player ref’ı geçirmek CompileAndRun’ın context'siz çalışmasını önler
+            script->CompileAndRun(player);
+            logger::info("PCB komutu başarıyla çalıştırıldı.");
         });
     }
 }
